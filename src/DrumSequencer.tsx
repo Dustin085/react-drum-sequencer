@@ -52,7 +52,6 @@ function DrumSequencer({ samples = DEFAULT_SAMPLES, numOfSteps = 16 }: Props) {
     }
 
     useEffect(() => {
-        const stepsIds = [...Array(numOfSteps).keys()] as const;
         tracksRef.current = samples.map((sample, index) => {
             return {
                 id: index,
@@ -61,22 +60,6 @@ function DrumSequencer({ samples = DEFAULT_SAMPLES, numOfSteps = 16 }: Props) {
                 steps: Array(numOfSteps).fill(false),
             }
         });
-
-
-        seqRef.current = new Tone.Sequence((time, step) => {
-            trackSteps.forEach(trkStep => {
-                if (trkStep.steps[step]) {
-                    tracksRef.current.forEach(trk => {
-                        if (trk.id === trkStep.id) {
-                            trk.player.start(time);
-                        }
-                    })
-                }
-            })
-
-            // currentStep可以用來做指示燈
-            setCurrentStep(step);
-        }, [...stepsIds], `${numOfSteps}n`).start(0);
 
         Tone.getTransport().bpm.value = DEFAULT_CONFIG.bpm;
         Tone.getDestination().volume.value = DEFAULT_CONFIG.vulume;
@@ -89,22 +72,37 @@ function DrumSequencer({ samples = DEFAULT_SAMPLES, numOfSteps = 16 }: Props) {
                 console.log(err);
             });
 
+        return () => {
+            tracksRef.current.map(trk => { trk.player.dispose(); });
+        }
+    }, [DEFAULT_CONFIG.bpm, DEFAULT_CONFIG.vulume, numOfSteps, samples]);
 
+
+    useEffect(() => {
+        const stepsIds = [...Array(numOfSteps).keys()] as const;
+        seqRef.current = new Tone.Sequence((time, step) => {
+            trackSteps.forEach(trkStep => {
+                if (trkStep.steps[step]) {
+                    tracksRef.current.forEach(trk => {
+                        if (trk.id === trkStep.id) {
+                            trk.player.start(time);
+                        }
+                    })
+                }
+            })
+            // currentStep可以用來做指示燈
+            setCurrentStep(step);
+        }, [...stepsIds], `${numOfSteps}n`).start(0);
 
         return () => {
             seqRef.current?.dispose();
-
-            tracksRef.current.map(trk => { trk.player.dispose(); });
         }
-    }, [DEFAULT_CONFIG.bpm, DEFAULT_CONFIG.vulume, numOfSteps, samples, trackSteps]);
+    }, [numOfSteps, trackSteps]);
 
 
 
     const handleTogglePlaying = () => {
-        if (isPlaying) {
-            Tone.getTransport().stop();
-            setCurrentStep(0);
-        }
+        if (isPlaying) Tone.getTransport().pause();
         else Tone.getTransport().start();
 
         setIsPlaying((prev) => !prev)
