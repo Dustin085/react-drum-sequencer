@@ -1,0 +1,28 @@
+.stepRow {
+    display: flex;
+    column-gap: .5rem;
+
+    label:nth-child(4n) {
+        margin-right: .5rem;
+    }
+
+    label:last-child {
+        margin-right: 0;
+    }
+}
+
+.hiddenCheckBox {
+    display: none;
+
+    &:checked+.stepBox {
+        background-color: #484785;
+    }
+}
+
+.stepBox {
+    display: inline-block;
+    background-color: #fff;
+    height: 3rem;
+    width: 3rem;
+    border-radius: .5rem;
+}

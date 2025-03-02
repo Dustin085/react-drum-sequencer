@@ -133,31 +133,57 @@ function DrumSequencer({ samples = DEFAULT_SAMPLES, numOfSteps = 16 }: Props) {
         })
     }
 
+    const handleChangeBpm = (bpm: number) => {
+        const max_bpm = 180;
+        const min_bpm = 0;
+        let bpmInRange: number = isNaN(bpm) ? DEFAULT_CONFIG.bpm : bpm;
+        // 限制 BPM 在設定範圍內
+        bpmInRange = Math.max(min_bpm, Math.min(bpmInRange, max_bpm));
+        Tone.getTransport().bpm.value = bpmInRange;
+    }
+
+    const handleChangeVolume = (percent: number) => {
+        const max_dB = 0;
+        const dB = 20 * Math.log10((percent / 100) * (10 ** (max_dB / 20)));
+        Tone.getDestination().volume.value = dB;
+    }
+
     return (
-        <div className={styles.rootWrap}>
-            <button onClick={handleTogglePlaying} disabled={isLoading}>{isPlaying ? "Stop" : "Start"}</button>
+        <div className={styles.myClass}>
+            <button onClick={handleTogglePlaying} disabled={isLoading} style={{ marginRight: '.5rem' }}>{isPlaying ? "Stop" : "Start"}</button>
             <button onClick={handleClearSteps}>Clear</button>
             <p>{currentStep}</p>
             {
                 trackSteps.map((trkStep) => {
                     return (
                         <React.Fragment key={trkStep.id}>
-                            <p key={trkStep.id}>{trkStep.name}</p>
-                            {trkStep.steps.map((step, stepIndex) => {
-                                return (
-                                    <input
-                                        key={trkStep.id + stepIndex}
-                                        type="checkbox"
-                                        checked={step}
-                                        onChange={() => { handleToggleStep(trkStep.id, stepIndex) }}
-                                    />
-                                )
-                            })}
+                            <p>{trkStep.name}</p>
+                            <div className={styles.stepRow}>
+                                {trkStep.steps.map((step, stepIndex) => {
+                                    return (
+                                        <label key={trkStep.id + stepIndex}>
+                                            <input
+                                                className={styles.hiddenCheckBox}
+                                                type="checkbox"
+                                                checked={step}
+                                                onChange={() => { handleToggleStep(trkStep.id, stepIndex) }}
+                                            />
+                                            <div className={styles.stepBox}></div>
+                                        </label>
+                                    )
+                                })}
+                            </div>
                         </React.Fragment>
                     )
                 })
             }
-        </div>
+            <div>
+                <input type="range" id="volume" name="volume" min="0" max="100" defaultValue="80" onChange={(event) => { handleChangeVolume(Number(event.target.value)) }} />
+                <label htmlFor="volume">Volume</label>
+            </div>
+            <input type="text" name='bpm' defaultValue={DEFAULT_CONFIG.bpm} onChange={(event) => handleChangeBpm(Number(event.target.value))} />
+            <label htmlFor="bpm">bpm</label>
+        </div >
     )
 }
 
