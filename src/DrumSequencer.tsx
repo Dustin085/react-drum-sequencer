@@ -122,6 +122,16 @@ function DrumSequencer({ samples = DEFAULT_SAMPLES, numOfSteps = 16 }: Props) {
         })
     };
 
+    // 如果要利用事件代理的話就使用這個函數，但會造成handleClearSteps出現錯誤，因為利用defaultValue會造成UI錯誤
+    // const handleChangeStep = (event: React.FormEvent<HTMLDivElement>, trkStepId: number) => {
+    //     const target = event.target as HTMLInputElement; // 確保是 <input>
+
+    //     if (target.type === "checkbox") { // 確保是 checkbox 事件
+    //         const stepIndex = parseInt(target.dataset.stepindex || "0", 10); // 取得 data-stepindex
+    //         handleToggleStep(trkStepId, stepIndex);
+    //     }
+    // }
+
     const handleClearSteps = () => {
         setTrackSteps(prev => {
             return prev.map(trkStep => {
@@ -165,6 +175,8 @@ function DrumSequencer({ samples = DEFAULT_SAMPLES, numOfSteps = 16 }: Props) {
                                             <input
                                                 className={styles.hiddenCheckBox}
                                                 type="checkbox"
+                                                // defaultChecked={step}
+                                                // data-stepindex={stepIndex}
                                                 checked={step}
                                                 onChange={() => { handleToggleStep(trkStep.id, stepIndex) }}
                                             />
